@@ -66,6 +66,7 @@ class Generator(object):
         self.embed = kwargs.get('embed', False)
         self.encoding = kwargs.get('encoding', 'utf8')
         self.extensions = kwargs.get('extensions', None)
+        self.rst_extensions = kwargs.get('rst_extensions', None)
         self.logger = kwargs.get('logger', None)
         self.presenter_notes = kwargs.get('presenter_notes', True)
         self.relative = kwargs.get('relative', False)
@@ -101,6 +102,7 @@ class Generator(object):
             self.relative = config.get('relative', False)
             self.copy_theme = config.get('copy_theme', False)
             self.extensions = config.get('extensions', '')
+            self.rst_extensions = config.get('rst_extensions', '')
             self.theme = config.get('theme', 'default')
             self.add_user_css(config.get('css', []))
             self.add_user_js(config.get('js', []))
@@ -249,7 +251,7 @@ class Generator(object):
         else:
             try:
                 parser = Parser(os.path.splitext(source)[1], self.encoding,
-                    self.extensions)
+                    self.extensions, self.rst_extensions)
             except NotImplementedError:
                 return slides
 
@@ -457,6 +459,9 @@ class Generator(object):
                 config[boolopt] = raw_config.getboolean('landslide', boolopt)
         if raw_config.has_option('landslide', 'extensions'):
             config['extensions'] = ",".join(raw_config.get('landslide', 'extensions')\
+                .replace('\r', '').split('\n'))
+        if raw_config.has_option('landslide', 'rst_extensions'):
+            config['rst_extensions'] = ",".join(raw_config.get('landslide', 'rst_extensions')\
                 .replace('\r', '').split('\n'))
         if raw_config.has_option('landslide', 'css'):
             config['css'] = raw_config.get('landslide', 'css')\

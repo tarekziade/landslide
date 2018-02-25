@@ -1,12 +1,23 @@
 # -*- coding: utf-8 -*-
-
+import os
 import re
+from importlib import import_module
+from importlib.util import spec_from_file_location, module_from_spec
 
 SUPPORTED_FORMATS = {
     'markdown': ['.mdown', '.markdown', '.markdn', '.md', '.mdn', '.mdwn'],
     'restructuredtext': ['.rst', '.rest'],
     'textile': ['.textile'],
 }
+
+
+def import_ext(extension):
+    if os.path.exists(extension):
+        spec = spec_from_file_location("extension", extension)
+        module = module_from_spec(spec)
+        spec.loader.exec_module(module)
+    else:
+        import_module(extension)
 
 
 class Parser(object):
@@ -27,8 +38,10 @@ class Parser(object):
     ]
 
     md_extensions = ''
+    rst_extensions = []
 
-    def __init__(self, extension, encoding='utf8', md_extensions=''):
+    def __init__(self, extension, encoding='utf8', md_extensions='',
+                 rst_extensions=''):
         """Configures this parser.
         """
         self.encoding = encoding
@@ -46,9 +59,14 @@ class Parser(object):
             exts = (value.strip() for value in md_extensions.split(','))
             self.md_extensions = filter(None, exts)
 
+        if rst_extensions:
+            exts = (value.strip() for value in rst_extensions.split(','))
+            self.rst_extensions = filter(None, exts)
+
     def parse(self, text):
         """Parses and renders a text as HTML regarding current format.
         """
+
         if self.format == 'markdown':
             try:
                 import markdown
@@ -64,6 +82,8 @@ class Parser(object):
                 from landslide.rst import html_body
             except ImportError:
                 raise RuntimeError(u"Looks like docutils are not installed")
+            for ext in self.rst_extensions:
+                import_ext(ext)
 
             html = html_body(text, input_encoding=self.encoding)
 

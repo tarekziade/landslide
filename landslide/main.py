@@ -123,6 +123,13 @@ def _parse_options():
     )
 
     parser.add_option(
+        "--rst-extensions",
+        dest="rst_extensions",
+        help="Comma-separated list of extensions for ReSTructuredText",
+        default='',
+    )
+
+    parser.add_option(
         "-w", "--watch",
         action="store_true",
         dest="watch",
